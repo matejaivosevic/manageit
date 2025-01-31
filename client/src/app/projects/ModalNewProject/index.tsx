@@ -15,22 +15,31 @@ const ModalNewProject = ({ isOpen, onClose }: Props) => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const handleSubmit = async () => {
-    if (!projectName || !startDate || !endDate) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await createProject({
+        name: projectName,
+        description,
+        startDate: formatISO(new Date(startDate), {
+          representation: "complete",
+        }),
+        endDate: formatISO(new Date(endDate), {
+          representation: "complete",
+        }),
+      }).unwrap();
 
-    const formattedStartDate = formatISO(new Date(startDate), {
-      representation: "complete",
-    });
-    const formattedEndDate = formatISO(new Date(endDate), {
-      representation: "complete",
-    });
+      // Reset form
+      setProjectName("");
+      setDescription("");
+      setStartDate("");
+      setEndDate("");
 
-    await createProject({
-      name: projectName,
-      description,
-      startDate: formattedStartDate,
-      endDate: formattedEndDate,
-    });
+      // Close modal
+      onClose();
+    } catch (error) {
+      console.error("Failed to create project:", error);
+    }
   };
 
   const isFormValid = () => {
@@ -44,10 +53,7 @@ const ModalNewProject = ({ isOpen, onClose }: Props) => {
     <Modal isOpen={isOpen} onClose={onClose} name="Create New Project">
       <form
         className="mt-4 space-y-6"
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSubmit();
-        }}
+        onSubmit={handleSubmit}
       >
         <input
           type="text"

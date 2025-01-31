@@ -14,6 +14,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Priority {
+  Urgent
+  High
+  Medium
+  Low
+  Backlog
+}
+
 model User {
   userId            Int     @id @default(autoincrement())
   cognitoId         String  @unique
@@ -39,13 +47,15 @@ model Team {
 }
 
 model Project {
-  id           Int           @id @default(autoincrement())
-  name         String
-  description  String?
-  startDate    DateTime?
-  endDate      DateTime?
-  tasks        Task[]
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  tasks       Task[]
   projectTeams ProjectTeam[]
+
+  @@map("Project")
 }
 
 model ProjectTeam {
@@ -61,7 +71,7 @@ model Task {
   title          String
   description    String?
   status         String?
-  priority       String?
+  priority       Priority?
   tags           String?
   startDate      DateTime?
   dueDate        DateTime?

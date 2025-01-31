@@ -42,27 +42,49 @@ export const createTask = async (
     authorUserId,
     assignedUserId,
   } = req.body;
+
   try {
-    const newTask = await prisma.task.create({
-      data: {
-        title,
-        description,
-        status,
-        priority,
-        tags,
-        startDate,
-        dueDate,
-        points,
-        projectId,
-        authorUserId,
-        assignedUserId,
+    const maxId = await prisma.task.findFirst({
+      orderBy: {
+        id: "desc",
       },
     });
+
+    const nextId = (maxId?.id || 0) + 1;
+    console.log("Next task ID will be:", nextId);
+
+    const taskData = {
+      id: nextId,
+      title,
+      description,
+      status,
+      priority,
+      tags,
+      startDate: startDate ? new Date(startDate) : null,
+      dueDate: dueDate ? new Date(dueDate) : null,
+      points,
+      projectId: Number(projectId),
+      authorUserId: Number(authorUserId),
+      assignedUserId: assignedUserId ? Number(assignedUserId) : null,
+    };
+
+    const newTask = await prisma.task.create({
+      data: taskData,
+      include: {
+        project: true,
+        author: true,
+        assignee: true,
+      },
+    });
+
+    console.log("Created task:", newTask);
     res.status(201).json(newTask);
   } catch (error: any) {
-    res
-      .status(500)
-      .json({ message: `Error creating a task: ${error.message}` });
+    console.error("Task creation error details:", error);
+    res.status(500).json({
+      message: `Error creating a task: ${error.message}`,
+      details: error,
+    });
   }
 };
 

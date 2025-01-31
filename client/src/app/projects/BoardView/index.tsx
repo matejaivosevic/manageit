@@ -1,5 +1,5 @@
 import { useGetTasksQuery, useUpdateTaskStatusMutation } from "@/state/api";
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { Task as TaskType } from "@/state/api";
@@ -126,6 +126,29 @@ type TaskProps = {
 };
 
 const Task = ({ task }: TaskProps) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [updateTaskStatus] = useUpdateTaskStatusMutation();
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleMenuClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsMenuOpen(!isMenuOpen);
+  };
+
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "task",
     item: { id: task.id },
@@ -168,7 +191,7 @@ const Task = ({ task }: TaskProps) => {
       ref={(instance) => {
         drag(instance);
       }}
-      className={`mb-4 rounded-md bg-white shadow dark:bg-dark-secondary ${
+      className={`relative mb-4 rounded-md bg-white shadow dark:bg-dark-secondary ${
         isDragging ? "opacity-50" : "opacity-100"
       }`}
     >
@@ -197,7 +220,10 @@ const Task = ({ task }: TaskProps) => {
               ))}
             </div>
           </div>
-          <button className="flex h-6 w-4 flex-shrink-0 items-center justify-center dark:text-neutral-500">
+          <button 
+            onClick={handleMenuClick}
+            className="flex h-6 w-4 flex-shrink-0 items-center justify-center dark:text-neutral-500"
+          >
             <EllipsisVertical size={26} />
           </button>
         </div>
@@ -252,6 +278,40 @@ const Task = ({ task }: TaskProps) => {
           </div>
         </div>
       </div>
+
+      {isMenuOpen && (
+        <div 
+          ref={menuRef}
+          className="absolute right-2 top-10 z-50 w-48 rounded-md bg-white shadow-lg dark:bg-dark-secondary"
+        >
+          <div className="py-1">
+            <button
+              className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-dark-tertiary"
+              onClick={() => updateTaskStatus({ taskId: task.id, status: "To Do" })}
+            >
+              Set To Do
+            </button>
+            <button
+              className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-dark-tertiary"
+              onClick={() => updateTaskStatus({ taskId: task.id, status: "Work In Progress" })}
+            >
+              Set In Progress
+            </button>
+            <button
+              className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-dark-tertiary"
+              onClick={() => updateTaskStatus({ taskId: task.id, status: "Under Review" })}
+            >
+              Set Under Review
+            </button>
+            <button
+              className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-dark-tertiary"
+              onClick={() => updateTaskStatus({ taskId: task.id, status: "Completed" })}
+            >
+              Set Completed
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
