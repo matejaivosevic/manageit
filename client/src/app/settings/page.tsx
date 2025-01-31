@@ -1,13 +1,33 @@
 "use client";
 import Header from "@/components/Header";
-import React from "react";
-import { useAuthenticator } from "@aws-amplify/ui-react";
+import React, { useEffect, useState } from "react";
+import { getCurrentUser, fetchUserAttributes } from "aws-amplify/auth";
 
 const Settings = () => {
-  const { user } = useAuthenticator((context) => [context.user]);
-  
-  // Dodajemo console.log da vidimo šta imamo u user objektu
-  console.log("Complete user object:", JSON.stringify(user, null, 2));
+  const [userEmail, setUserEmail] = useState("");
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        // Dobijamo username
+        const currentUser = await getCurrentUser();
+        setUsername(currentUser.username);
+
+        // Dobijamo atribute (email)
+        const attributes = await fetchUserAttributes();
+        console.log("User attributes:", attributes);
+
+        if (attributes.email) {
+          setUserEmail(attributes.email);
+        }
+      } catch (error) {
+        console.error("Error getting user:", error);
+      }
+    };
+
+    getUserData();
+  }, []);
 
   const labelStyles = "block text-sm font-medium dark:text-white";
   const textStyles =
@@ -19,11 +39,11 @@ const Settings = () => {
       <div className="space-y-4">
         <div>
           <label className={labelStyles}>Username</label>
-          <div className={textStyles}>{user?.signInDetails?.loginId}</div>
+          <div className={textStyles}>{username}</div>
         </div>
         <div>
           <label className={labelStyles}>Email</label>
-          <div className={textStyles}>{user?.username}</div>
+          <div className={textStyles}>{userEmail}</div>
         </div>
       </div>
     </div>
