@@ -47,13 +47,3 @@ ManageIT is a full-stack project management application built as a learning exer
 4. Run database migrations
 5. Seed the database
 6. Start the development servers
-
-For detailed instructions, see the sections below.
-
-## Contributing
-
-This project was created for learning purposes, but contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
