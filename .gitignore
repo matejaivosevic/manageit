@@ -5,3 +5,12 @@ server/dist/
 client/.env
 server/.env
 client/.next/
+
+# OS files
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
